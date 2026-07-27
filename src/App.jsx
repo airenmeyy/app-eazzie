@@ -3,7 +3,7 @@ import {
   Heart, Book, Smile, Frown, Shield, User, LogOut, Menu, X, Check, 
   Search, Calendar, BarChart2, ArrowRight, Activity, Moon, Sun, 
   Wind, AlertCircle, FileText, Download, Users, Key, Link as LinkIcon, Lock,
-  Plus, Edit2, Trash2, HeartHandshake, Phone, Home, MapPin
+  Plus, Edit2, Trash2, HeartHandshake, Phone, Home, MapPin, CheckCircle2
 } from 'lucide-react';
 
 const colors = {
@@ -39,13 +39,14 @@ const AppContext = createContext();
 
 const Logo = ({ type = 'full', className = 'h-8' }) => {
   const src = '/logo1.png'; 
+  // Perbaikan Logo: Menggunakan scale yang lebih lembut (1.6) agar tidak terpotong 
+  // dan lebar yang lebih fleksibel.
   return (
-    <div className={`flex items-center justify-center overflow-hidden aspect-[3/1] ${className}`}>
+    <div className={`flex items-center justify-center overflow-hidden ${className} w-28 sm:w-32`}>
       <img 
         src={src} 
         alt="Eazzie" 
-        className="w-full h-full object-contain pointer-events-none" 
-        style={{ transform: 'scale(3.5)' }} 
+        className="w-full h-full object-contain scale-[1.6] pointer-events-none" 
       />
     </div>
   );
@@ -90,7 +91,8 @@ const Badge = ({ children, variant = 'gray' }) => {
     gray: "bg-[#F9F8F6] text-[#777777]",
     primary: "bg-[#F07C5F]/10 text-[#D96B50]",
     alert: "bg-[#E76F51]/10 text-[#E76F51]",
-    secondary: "bg-[#FFB870]/20 text-[#4A4A4A]"
+    secondary: "bg-[#FFB870]/20 text-[#4A4A4A]",
+    success: "bg-green-100 text-green-700"
   };
   return (
     <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${variants[variant]}`}>
@@ -117,7 +119,7 @@ const LandingPage = () => {
       <nav className="sticky top-0 z-50 bg-[#FFFDFA]/80 backdrop-blur-md border-b border-[#EAE6E1]">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="cursor-pointer" onClick={() => navigate('landing')}>
-            <Logo type="full" className="h-9" />
+            <Logo type="full" className="h-10" />
           </div>
           <div className="flex items-center gap-4">
             <Button variant="ghost" className="hidden md:flex" onClick={() => navigate('login')}>Log in</Button>
@@ -156,6 +158,7 @@ const AuthPage = ({ type = 'login' }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false); // FITUR REMEMBER ME
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleAuth = (e) => {
@@ -173,7 +176,7 @@ const AuthPage = ({ type = 'login' }) => {
         setErrorMsg('Please enter your email and password.');
         return;
       }
-      const success = login(email, password, role);
+      const success = login(email, password, role, rememberMe);
       if (!success) {
         setErrorMsg('Account not found or password incorrect. Have you registered?');
       }
@@ -227,34 +230,27 @@ const AuthPage = ({ type = 'login' }) => {
             </div>
           )}
 
-          <form onSubmit={handleAuth} className="space-y-5">
+          <form onSubmit={handleAuth} className="space-y-4">
             {type === 'register' && (
-              <Input 
-                label="Display Name" 
-                placeholder="How should we call you?" 
-                value={name} 
-                onChange={(e) => setName(e.target.value)} 
-                required 
-              />
+              <Input label="Display Name" placeholder="How should we call you?" value={name} onChange={(e) => setName(e.target.value)} required />
             )}
-            <Input 
-              label="Email address" 
-              type="email" 
-              placeholder="hello@example.com" 
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)} 
-              required 
-            />
-            <Input 
-              label="Password" 
-              type="password" 
-              placeholder="••••••••" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-              required 
-            />
+            <Input label="Email address" type="email" placeholder="hello@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <Input label="Password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
             
-            <Button type="submit" className="w-full py-3 text-lg mt-4">
+            {type === 'login' && (
+              <div className="flex items-center gap-2 pt-1">
+                <input 
+                  type="checkbox" 
+                  id="remember" 
+                  checked={rememberMe} 
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 rounded border-[#EAE6E1] text-[#F07C5F] focus:ring-[#F07C5F]"
+                />
+                <label htmlFor="remember" className="text-sm text-[#777777] cursor-pointer">Remember me (save login)</label>
+              </div>
+            )}
+
+            <Button type="submit" className="w-full py-3 text-lg mt-2">
               {type === 'login' ? 'Sign In' : 'Create Account'}
             </Button>
           </form>
@@ -291,7 +287,7 @@ const PatientLayout = ({ children }) => {
     <div className="min-h-screen bg-[#FFFDFA] flex flex-col md:flex-row">
       <div className="md:hidden bg-white border-b border-[#EAE6E1] p-4 flex justify-between items-center sticky top-0 z-40">
         <div className="flex items-center gap-2 font-bold text-lg text-[#4A4A4A]">
-          <Logo type="full" className="h-7" />
+          <Logo type="full" className="h-8" />
         </div>
         <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-[#4A4A4A]">
           {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -300,7 +296,7 @@ const PatientLayout = ({ children }) => {
 
       <div className={`${mobileMenuOpen ? 'block' : 'hidden'} md:block w-full md:w-64 bg-white border-r border-[#EAE6E1] flex-shrink-0 fixed md:sticky top-[61px] md:top-0 h-[calc(100vh-61px)] md:h-screen z-30 flex flex-col`}>
         <div className="p-6 hidden md:flex items-center gap-2 cursor-pointer" onClick={() => navigate('patient-dash')}>
-          <Logo type="full" className="h-8" />
+          <Logo type="full" className="h-9" />
         </div>
         <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
           {menuItems.map(item => {
@@ -662,7 +658,56 @@ const PatientSafetyPlan = () => {
   );
 };
 
+// FITUR JURNAL DIPERBAIKI (Sudah bisa buat baru dan simpan)
 const PatientJournal = () => {
+  const { state, addJournal } = useContext(AppContext);
+  const { journals } = state;
+  const [isWriting, setIsWriting] = useState(false);
+  
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+
+  const handleSave = () => {
+    if (!title || !content) return;
+    addJournal({
+      id: Date.now().toString(),
+      title,
+      content,
+      date: new Date().toLocaleDateString()
+    });
+    setIsWriting(false);
+    setTitle('');
+    setContent('');
+  };
+
+  if (isWriting) {
+    return (
+      <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-[#4A4A4A]">New Journal Entry</h1>
+          <Button variant="ghost" onClick={() => setIsWriting(false)}>Cancel</Button>
+        </div>
+        <Card>
+          <Input 
+            placeholder="Give your entry a title..." 
+            value={title} 
+            onChange={(e) => setTitle(e.target.value)} 
+            className="mb-6 font-bold text-lg"
+          />
+          <textarea 
+            placeholder="This space is yours. Write whatever is on your mind..."
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="w-full h-64 p-4 rounded-xl border border-[#EAE6E1] resize-none focus:outline-none focus:border-[#F07C5F] focus:ring-1 focus:ring-[#F07C5F]"
+          />
+          <div className="flex justify-end mt-6">
+            <Button disabled={!title || !content} onClick={handleSave}>Save Entry</Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in">
       <div className="flex justify-between items-center">
@@ -670,21 +715,66 @@ const PatientJournal = () => {
           <h1 className="text-2xl font-bold text-[#4A4A4A]">Journal Library</h1>
           <p className="text-[#777777]">A safe place for your thoughts.</p>
         </div>
-        <Button icon={Book}>New Entry</Button>
+        <Button icon={Plus} onClick={() => setIsWriting(true)}>New Entry</Button>
       </div>
       
-      <EmptyState 
-        icon={Edit2}
-        title="Your space is empty"
-        description="This space is yours. Write a sentence, a word, or simply begin with today."
-        action={() => {}}
-        actionText="Write First Entry"
-      />
+      {journals.length === 0 ? (
+        <EmptyState 
+          icon={Edit2}
+          title="Your space is empty"
+          description="This space is yours. Write a sentence, a word, or simply begin with today."
+          action={() => setIsWriting(true)}
+          actionText="Write First Entry"
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[...journals].reverse().map(journal => (
+            <Card key={journal.id} className="flex flex-col h-48">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-bold text-[#4A4A4A] truncate pr-2">{journal.title}</h3>
+                <span className="text-xs text-[#D0C9C0] shrink-0">{journal.date}</span>
+              </div>
+              <p className="text-sm text-[#777777] line-clamp-4 flex-1">{journal.content}</p>
+              <div className="mt-4 pt-4 border-t border-[#EAE6E1]">
+                <Badge variant="gray">Private</Badge>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
 
+// FITUR DBT DIPERBAIKI (Tombol start practice sekarang bekerja)
 const PatientDBT = () => {
+  const [activeSkill, setActiveSkill] = useState(null);
+
+  if (activeSkill) {
+    return (
+      <div className="max-w-2xl mx-auto py-8 animate-in slide-in-from-right-4">
+        <Button variant="ghost" onClick={() => setActiveSkill(null)} className="mb-6 -ml-4">
+          <ArrowRight className="rotate-180" size={16}/> Back to Library
+        </Button>
+        <Card className="text-center py-12 px-8">
+          <Badge variant="primary" className="mb-6 inline-block">{activeSkill.category}</Badge>
+          <h2 className="text-3xl font-bold text-[#4A4A4A] mb-4">{activeSkill.name}</h2>
+          <p className="text-[#777777] mb-12">{activeSkill.desc}</p>
+          
+          <div className="w-24 h-24 rounded-full bg-[#FDF3E7] mx-auto mb-12 flex items-center justify-center">
+             <Wind size={40} className="text-[#F07C5F] animate-pulse" />
+          </div>
+
+          <p className="text-sm text-[#4A4A4A] mb-8">Take a moment to practice this skill. When you are done, log your practice.</p>
+          
+          <Button onClick={() => setActiveSkill(null)} icon={CheckCircle2} className="w-full sm:w-auto">
+            I've Completed This Practice
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 animate-in fade-in">
        <header>
@@ -703,7 +793,9 @@ const PatientDBT = () => {
               <h3 className="text-lg font-bold text-[#4A4A4A] mb-2">{skill.name}</h3>
               <p className="text-sm text-[#777777] leading-relaxed">{skill.desc}</p>
             </div>
-            <Button variant="outline" className="w-full mt-6 bg-[#FFFDFA] border-none hover:bg-[#FDF3E7]">Start Practice</Button>
+            <Button variant="outline" className="w-full mt-6 bg-[#FFFDFA] border-none hover:bg-[#FDF3E7]" onClick={() => setActiveSkill(skill)}>
+              Start Practice
+            </Button>
           </Card>
         ))}
       </div>
@@ -848,8 +940,10 @@ export default function App() {
   });
 
   const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem('eazzie_user');
-    return savedUser ? JSON.parse(savedUser) : null;
+    // Mengecek localStorage (kalo remember me) atau sessionStorage (kalo cuma sisa sesi ini)
+    const savedLocal = localStorage.getItem('eazzie_user');
+    const savedSession = sessionStorage.getItem('eazzie_user');
+    return savedLocal ? JSON.parse(savedLocal) : (savedSession ? JSON.parse(savedSession) : null);
   }); 
 
   const [currentRoute, setCurrentRoute] = useState(user ? (user.role === 'patient' ? 'patient-dash' : 'psych-dash') : 'landing');
@@ -858,6 +952,8 @@ export default function App() {
     const savedState = localStorage.getItem('eazzie_data');
     return savedState ? JSON.parse(savedState) : {
       moodLogs: [],
+      journals: [],
+      inviteCodes: [],
       safetyPlan: initialSafetyPlan
     };
   });
@@ -867,23 +963,19 @@ export default function App() {
   }, [registeredUsers]);
 
   useEffect(() => {
-    if (user) {
-      localStorage.setItem('eazzie_user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('eazzie_user');
-    }
-  }, [user]);
-
-  useEffect(() => {
     localStorage.setItem('eazzie_data', JSON.stringify(state));
   }, [state]);
 
-  const addMoodLog = (log) => {
-    setState(prev => ({ ...prev, moodLogs: [...prev.moodLogs, log] }));
-  };
-
-  const updateSafetyPlan = (plan) => {
-    setState(prev => ({ ...prev, safetyPlan: plan }));
+  const addMoodLog = (log) => setState(prev => ({ ...prev, moodLogs: [...prev.moodLogs, log] }));
+  const addJournal = (entry) => setState(prev => ({ ...prev, journals: [...prev.journals, entry] }));
+  const updateSafetyPlan = (plan) => setState(prev => ({ ...prev, safetyPlan: plan }));
+  
+  const generateInviteCode = () => {
+    const newCode = 'EAZ-' + Math.random().toString(36).substring(2, 6).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+    setState(prev => ({ 
+      ...prev, 
+      inviteCodes: [{ code: newCode, date: new Date().toLocaleDateString() }, ...prev.inviteCodes] 
+    }));
   };
 
   const navigate = (route) => {
@@ -900,14 +992,24 @@ export default function App() {
       role: userData.role 
     };
     setRegisteredUsers(prev => [...prev, newUser]);
+    
+    // Otomatis login dengan remember me
     setUser(newUser);
+    localStorage.setItem('eazzie_user', JSON.stringify(newUser));
     navigate(newUser.role === 'patient' ? 'patient-dash' : 'psych-dash');
   };
 
-  const login = (email, password, role) => {
+  const login = (email, password, role, rememberMe) => {
     const foundUser = registeredUsers.find(u => u.email === email && u.password === password && u.role === role);
     if (foundUser) {
       setUser(foundUser);
+      if (rememberMe) {
+        localStorage.setItem('eazzie_user', JSON.stringify(foundUser));
+        sessionStorage.removeItem('eazzie_user');
+      } else {
+        sessionStorage.setItem('eazzie_user', JSON.stringify(foundUser));
+        localStorage.removeItem('eazzie_user');
+      }
       navigate(foundUser.role === 'patient' ? 'patient-dash' : 'psych-dash');
       return true;
     }
@@ -916,10 +1018,15 @@ export default function App() {
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem('eazzie_user');
+    sessionStorage.removeItem('eazzie_user');
     navigate('landing');
   };
 
-  const contextValue = { user, register, login, logout, navigate, currentRoute, state, addMoodLog, updateSafetyPlan };
+  const contextValue = { 
+    user, register, login, logout, navigate, currentRoute, 
+    state, addMoodLog, updateSafetyPlan, addJournal, generateInviteCode 
+  };
 
   return (
     <AppContext.Provider value={contextValue}>
@@ -948,14 +1055,34 @@ export default function App() {
             {currentRoute === 'psych-codes' && (
               <div className="space-y-6 animate-in fade-in">
                  <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-[#4A4A4A]">Invite Codes</h1>
-                    <Button>Generate New Code</Button>
+                    <div>
+                      <h1 className="text-2xl font-bold text-[#4A4A4A]">Invite Codes</h1>
+                      <p className="text-[#777777]">Share these codes with your patients to connect.</p>
+                    </div>
+                    <Button onClick={generateInviteCode} icon={Plus}>Generate New Code</Button>
                  </div>
-                 <EmptyState 
-                    icon={Key}
-                    title="No active codes"
-                    description="Create secure codes to invite patients to connect with your Eazzie Pro dashboard."
-                 />
+                 
+                 {state.inviteCodes.length === 0 ? (
+                   <EmptyState 
+                      icon={Key}
+                      title="No active codes"
+                      description="Create secure codes to invite patients to connect with your Eazzie Pro dashboard."
+                      action={generateInviteCode}
+                      actionText="Generate First Code"
+                   />
+                 ) : (
+                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+                     {state.inviteCodes.map((c, i) => (
+                       <Card key={i} className="flex justify-between items-center bg-[#FFFDFA]">
+                         <div>
+                           <p className="font-mono text-lg font-bold text-[#F07C5F] tracking-widest">{c.code}</p>
+                           <p className="text-xs text-[#777777] mt-1">Generated: {c.date}</p>
+                         </div>
+                         <Badge variant="success">Active</Badge>
+                       </Card>
+                     ))}
+                   </div>
+                 )}
               </div>
             )}
              {!['psych-dash', 'psych-codes'].includes(currentRoute) && <PsychiatristDashboard />}
