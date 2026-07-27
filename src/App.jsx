@@ -378,6 +378,18 @@ const PatientDashboard = () => {
   const { user, navigate, state } = useContext(AppContext);
   const { moodLogs } = state;
 
+  // Fungsi pembantu untuk mengatur tinggi dan warna grafik batang
+  const getBarHeight = (score) => {
+    const heights = { '3': '100%', '2': '85%', '1': '70%', '0': '50%', '-1': '35%', '-2': '20%', '-3': '10%' };
+    return heights[score] || '50%';
+  };
+
+  const getBarColor = (score) => {
+    if (score > 0) return 'bg-[#F07C5F] hover:bg-[#D96B50]';
+    if (score < 0) return 'bg-[#E76F51] hover:bg-[#D45D40]';
+    return 'bg-[#D0C9C0] dark:bg-[#666666] hover:bg-[#BDB5AC]';
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <header>
@@ -425,8 +437,30 @@ const PatientDashboard = () => {
             description="Your check-in patterns will appear here once you start logging your mood. There's no rush to begin."
           />
         ) : (
-          <Card>
-            <p className="text-sm text-[#777777] dark:text-[#A0A0A0] text-center py-8">Chart data will appear here.</p>
+          <Card className="pt-8 pb-4 px-4 sm:px-8">
+            <div className="h-48 flex items-end justify-between gap-2">
+              {moodLogs.slice(-7).map((log, i) => (
+                <div key={log.id} className="flex flex-col items-center flex-1 group">
+                  {/* Tooltip Angka yang muncul saat di-hover */}
+                  <span className="text-xs font-bold text-[#4A4A4A] dark:text-[#EAE6E1] mb-2 opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0 duration-200">
+                    {log.score > 0 ? `+${log.score}` : log.score}
+                  </span>
+                  
+                  {/* Grafik Batang (Bar) */}
+                  <div className="w-full max-w-[3rem] h-32 flex items-end justify-center rounded-t-xl bg-[#F9F8F6] dark:bg-[#2C2C2C] relative overflow-hidden">
+                    <div 
+                      className={`w-full rounded-t-xl transition-all duration-700 ease-out cursor-pointer ${getBarColor(log.score)}`}
+                      style={{ height: getBarHeight(log.score) }}
+                    ></div>
+                  </div>
+                  
+                  {/* Label Tanggal */}
+                  <span className="text-[10px] text-[#777777] dark:text-[#A0A0A0] mt-3 font-medium tracking-wide">
+                    {log.date.split('/')[0]}/{log.date.split('/')[1]}
+                  </span>
+                </div>
+              ))}
+            </div>
           </Card>
         )}
       </div>
