@@ -6,22 +6,20 @@ import {
   Plus, Edit2, Trash2, HeartHandshake, Phone, Home, MapPin
 } from 'lucide-react';
 
-// --- THEME CONSTANTS ---
 const colors = {
   bg: '#FFFDFA',       
   surface: '#FFFFFF',
   primary: '#F07C5F',  
   dark: '#4A4A4A',     
   secondary: '#FFB870',
-  beige: '#FDF3E7',    
-  gray: '#D0C9C0',     
-  alert: '#E76F51',    
-  textMain: '#4A4A4A', 
+  beige: '#FDF3E7',
+  gray: '#D0C9C0',
+  alert: '#E76F51',
+  textMain: '#4A4A4A',
   textMuted: '#777777',
   border: '#EAE6E1'
 };
 
-// --- MOCK DATA FOR LIBRARY ---
 const mockDbtSkills = [
   { id: 's1', name: 'STOP', category: 'Distress Tolerance', time: '1 min', desc: 'Stop, Take a breath, Observe, Proceed mindfully.' },
   { id: 's2', name: 'Wise Mind', category: 'Mindfulness', time: '5 min', desc: 'Finding the balance between reasonable mind and emotion mind.' },
@@ -29,14 +27,27 @@ const mockDbtSkills = [
   { id: 's4', name: 'DEAR MAN', category: 'Interpersonal', time: '15 min', desc: 'A framework for asking for what you want or saying no effectively.' },
 ];
 
+const initialSafetyPlan = {
+  warningSigns: '',
+  copingStrategies: '',
+  supportPeople: '',
+  professionalContacts: '',
+  safePlaces: ''
+};
+
 const AppContext = createContext();
 
-// --- UI COMPONENTS ---
 const Logo = ({ type = 'full', className = 'h-8' }) => {
-  // FIXED: Menambahkan garis miring '/' agar Vite membaca dari folder public/
   const src = '/logo1.png'; 
   return (
-    <img src={src} alt="Eazzie" className={`object-contain ${className}`} />
+    <div className={`flex items-center justify-center overflow-hidden aspect-[3/1] ${className}`}>
+      <img 
+        src={src} 
+        alt="Eazzie" 
+        className="w-full h-full object-contain pointer-events-none" 
+        style={{ transform: 'scale(3.5)' }} 
+      />
+    </div>
   );
 };
 
@@ -99,7 +110,6 @@ const EmptyState = ({ icon: Icon, title, description, action, actionText }) => (
   </div>
 );
 
-// --- PUBLIC PAGES ---
 const LandingPage = () => {
   const { navigate } = useContext(AppContext);
   return (
@@ -129,6 +139,9 @@ const LandingPage = () => {
           </p>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <Button onClick={() => navigate('register')} className="px-8 py-4 text-base">Start Your Journey</Button>
+            <p className="text-sm text-[#D0C9C0] font-medium flex items-center gap-2">
+              <Lock size={14}/> Private by default. You decide what to share.
+            </p>
           </div>
         </div>
       </section>
@@ -140,7 +153,6 @@ const AuthPage = ({ type = 'login' }) => {
   const { register, login, navigate } = useContext(AppContext);
   const [role, setRole] = useState('patient');
   
-  // Real Form State
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -262,7 +274,6 @@ const AuthPage = ({ type = 'login' }) => {
   );
 };
 
-// --- PATIENT VIEWS ---
 const PatientLayout = ({ children }) => {
   const { user, logout, navigate, currentRoute } = useContext(AppContext);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -394,7 +405,7 @@ const PatientDashboard = () => {
 const PatientMoodTracker = () => {
   const { navigate, addMoodLog } = useContext(AppContext);
   const [step, setStep] = useState(1);
-  const [score, setScore] = useState(null); // -3 to 3
+  const [score, setScore] = useState(null); 
   const [note, setNote] = useState('');
   const [emotions, setEmotions] = useState([]);
 
@@ -574,7 +585,7 @@ const PatientMoodList = () => {
 const PatientSafetyPlan = () => {
   const { state, updateSafetyPlan } = useContext(AppContext);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState(state.safetyPlan || { warningSigns: '', copingStrategies: '', supportPeople: '', professionalContacts: '', safePlaces: '' });
+  const [formData, setFormData] = useState(state.safetyPlan || initialSafetyPlan);
 
   const handleSave = () => {
     updateSafetyPlan(formData);
@@ -726,7 +737,6 @@ const PatientPsychiatrist = () => {
   )
 }
 
-// --- PSYCHIATRIST VIEWS ---
 const PsychiatristLayout = ({ children }) => {
   const { user, logout, navigate, currentRoute } = useContext(AppContext);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -831,15 +841,12 @@ const PsychiatristDashboard = () => {
   );
 };
 
-// --- MAIN APP PROVIDER ---
 export default function App() {
-  // 1. STATE UNTUK DAFTAR USER YANG REGISTER
   const [registeredUsers, setRegisteredUsers] = useState(() => {
     const saved = localStorage.getItem('eazzie_registered_users');
     return saved ? JSON.parse(saved) : [];
   });
 
-  // 2. STATE UNTUK USER YANG SEDANG LOGIN
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('eazzie_user');
     return savedUser ? JSON.parse(savedUser) : null;
@@ -847,21 +854,18 @@ export default function App() {
 
   const [currentRoute, setCurrentRoute] = useState(user ? (user.role === 'patient' ? 'patient-dash' : 'psych-dash') : 'landing');
   
-  // 3. STATE UNTUK DATA APLIKASI (Diikat ke user yang login secara konseptual, disederhanakan untuk UI)
   const [state, setState] = useState(() => {
     const savedState = localStorage.getItem('eazzie_data');
     return savedState ? JSON.parse(savedState) : {
       moodLogs: [],
-      safetyPlan: { warningSigns: '', copingStrategies: '', supportPeople: '', professionalContacts: '', safePlaces: '' }
+      safetyPlan: initialSafetyPlan
     };
   });
 
-  // Efek untuk menyimpan perubahan data user yang teregister
   useEffect(() => {
     localStorage.setItem('eazzie_registered_users', JSON.stringify(registeredUsers));
   }, [registeredUsers]);
 
-  // Efek untuk menyimpan session user aktif
   useEffect(() => {
     if (user) {
       localStorage.setItem('eazzie_user', JSON.stringify(user));
@@ -870,7 +874,6 @@ export default function App() {
     }
   }, [user]);
 
-  // Efek untuk menyimpan data state (mood, safety plan)
   useEffect(() => {
     localStorage.setItem('eazzie_data', JSON.stringify(state));
   }, [state]);
@@ -888,7 +891,6 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
-  // FUNGSI REGISTER: Simpan user baru ke database lokal, lalu auto-login
   const register = (userData) => {
     const newUser = { 
       id: Date.now().toString(), 
@@ -898,13 +900,10 @@ export default function App() {
       role: userData.role 
     };
     setRegisteredUsers(prev => [...prev, newUser]);
-    
-    // Auto-login setelah sukses register
     setUser(newUser);
     navigate(newUser.role === 'patient' ? 'patient-dash' : 'psych-dash');
   };
 
-  // FUNGSI LOGIN: Cek apakah email, password, dan role cocok dengan data teregister
   const login = (email, password, role) => {
     const foundUser = registeredUsers.find(u => u.email === email && u.password === password && u.role === role);
     if (foundUser) {
@@ -912,7 +911,7 @@ export default function App() {
       navigate(foundUser.role === 'patient' ? 'patient-dash' : 'psych-dash');
       return true;
     }
-    return false; // Mengembalikan false jika gagal
+    return false;
   };
 
   const logout = () => {
