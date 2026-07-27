@@ -23,16 +23,29 @@ const initialSafetyPlan = {
 
 const AppContext = createContext();
 
-const Logo = ({ type = 'full', className = 'h-8' }) => {
-  // Ganti ekstensi ini jadi .svg kalau file barumu namanya logo1.svg
-  const src = '/Untitled design.svg'; 
+const Logo = ({ type = 'full', className = '' }) => {
+  // Membersihkan class bawaan gambar lama yang sudah tidak diperlukan teks
+  const cleanClass = className.replace('brightness-0', '').replace('invert', '').trim();
+  const isInverted = className.includes('invert');
+  
+  // Menyesuaikan ukuran teks secara proporsional sesuai kebutuhan setiap halaman
+  let textSize = 'text-2xl';
+  if (className.includes('h-10')) textSize = 'text-4xl';
+  if (className.includes('h-9')) textSize = 'text-3xl';
+  if (className.includes('h-6')) textSize = 'text-xl';
+
   return (
-    <div className={`flex items-center justify-center ${className} dark:bg-white/95 dark:px-3 dark:py-1.5 dark:rounded-2xl shadow-sm transition-colors`}>
-      <img 
-        src={src} 
-        alt="Eazzie" 
-        className="h-full w-auto object-contain pointer-events-none" 
-      />
+    <div className={`flex items-center select-none font-black tracking-tighter ${textSize} ${cleanClass}`}>
+      {type === 'icon' ? (
+        // Untuk logo versi kecil (biasanya di sidebar mobile psikiater)
+        <span className={isInverted ? 'text-white' : 'text-[#F07C5F]'}>e.</span>
+      ) : (
+        // Untuk logo versi teks penuh yang rapi dan elegan
+        <>
+          <span className={isInverted ? 'text-white' : 'text-[#4A4A4A] dark:text-white'}>eazz</span>
+          <span className={isInverted ? 'text-[#FFB870]' : 'text-[#F07C5F]'}>ie</span>
+        </>
+      )}
     </div>
   );
 };
