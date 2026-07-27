@@ -981,7 +981,17 @@ export default function App() {
 
   const [state, setState] = useState(() => {
     const savedState = localStorage.getItem('eazzie_data');
-    return savedState ? JSON.parse(savedState) : {
+    if (savedState) {
+      const parsed = JSON.parse(savedState);
+      // Kita tambahkan fallback || [] agar tidak crash jika data lama belum punya fitur ini
+      return {
+        moodLogs: parsed.moodLogs || [],
+        journals: parsed.journals || [],
+        inviteCodes: parsed.inviteCodes || [],
+        safetyPlan: parsed.safetyPlan || initialSafetyPlan
+      };
+    }
+    return {
       moodLogs: [],
       journals: [],
       inviteCodes: [],
@@ -1012,15 +1022,15 @@ export default function App() {
     localStorage.setItem('eazzie_data', JSON.stringify(state));
   }, [state]);
 
-  const addMoodLog = (log) => setState(prev => ({ ...prev, moodLogs: [...prev.moodLogs, log] }));
-  const addJournal = (entry) => setState(prev => ({ ...prev, journals: [...prev.journals, entry] }));
+  const addMoodLog = (log) => setState(prev => ({ ...prev, moodLogs: [...(prev.moodLogs || []), log] }));
+  const addJournal = (entry) => setState(prev => ({ ...prev, journals: [...(prev.journals || []), entry] }));
   const updateSafetyPlan = (plan) => setState(prev => ({ ...prev, safetyPlan: plan }));
   
   const generateInviteCode = () => {
     const newCode = 'EAZ-' + Math.random().toString(36).substring(2, 6).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
     setState(prev => ({ 
       ...prev, 
-      inviteCodes: [{ code: newCode, date: new Date().toLocaleDateString() }, ...prev.inviteCodes] 
+      inviteCodes: [{ code: newCode, date: new Date().toLocaleDateString() }, ...(prev.inviteCodes || [])] 
     }));
   };
 
