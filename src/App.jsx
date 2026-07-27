@@ -24,7 +24,7 @@ const initialSafetyPlan = {
 const AppContext = createContext();
 
 const Logo = ({ type = 'full', className = 'h-8' }) => {
-  const src = '/logo1.png'; 
+  const src = '/Untitled design.svg'; 
   return (
     <div className={`flex items-center justify-center overflow-hidden ${className} w-28 sm:w-32 dark:bg-white/90 dark:px-2 dark:rounded-xl transition-colors`}>
       <img 
