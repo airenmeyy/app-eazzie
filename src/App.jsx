@@ -24,13 +24,14 @@ const initialSafetyPlan = {
 const AppContext = createContext();
 
 const Logo = ({ type = 'full', className = 'h-8' }) => {
+  // Ganti ekstensi ini jadi .svg kalau file barumu namanya logo1.svg
   const src = '/Untitled design.svg'; 
   return (
-    <div className={`flex items-center justify-center overflow-hidden ${className} w-28 sm:w-32 dark:bg-white/90 dark:px-2 dark:rounded-xl transition-colors`}>
+    <div className={`flex items-center justify-center ${className} dark:bg-white/95 dark:px-3 dark:py-1.5 dark:rounded-2xl shadow-sm transition-colors`}>
       <img 
         src={src} 
         alt="Eazzie" 
-        className="w-full h-full object-contain scale-[3.5] pointer-events-none" 
+        className="h-full w-auto object-contain pointer-events-none" 
       />
     </div>
   );
