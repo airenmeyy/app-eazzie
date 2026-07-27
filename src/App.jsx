@@ -58,7 +58,7 @@ const AppContext = createContext();
 const Logo = ({ type = 'full', className = 'h-8' }) => {
   const src = type === 'icon' 
     ? 'logo1.png' 
-    : 'logo2.png';
+    : 'logo1.png';
   return (
     <img src={src} alt="Eazzie Logo" className={`object-contain ${className}`} />
   );
