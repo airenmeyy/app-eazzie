@@ -7,36 +7,21 @@ import {
 } from 'lucide-react';
 
 // --- THEME CONSTANTS ---
-// Updated to match the warm coral, peach, and charcoal tones of the new logo
 const colors = {
-  bg: '#FFFDFA',       // Warm Ivory
+  bg: '#FFFDFA',       
   surface: '#FFFFFF',
-  primary: '#F07C5F',  // Coral from logo
-  dark: '#4A4A4A',     // Dark Charcoal from logo text
-  secondary: '#FFB870',// Peach/Yellow from logo
-  beige: '#FDF3E7',    // Warm Beige
-  gray: '#D0C9C0',     // Warm Gray
-  alert: '#E76F51',    // Distinct Red for alerts
-  textMain: '#4A4A4A', // Matches logo text
+  primary: '#F07C5F',  
+  dark: '#4A4A4A',     
+  secondary: '#FFB870',
+  beige: '#FDF3E7',    
+  gray: '#D0C9C0',     
+  alert: '#E76F51',    
+  textMain: '#4A4A4A', 
   textMuted: '#777777',
   border: '#EAE6E1'
 };
 
-// --- MOCK DATA (EMPTY STATE FOR NEW USERS) ---
-const emptyPatient = {
-  id: 'p1', name: 'Nara', fullName: 'Nara Larasati', email: 'nara@example.com', role: 'patient',
-  psychiatristId: null, consent: { mood: false, journal: false, dbt: false }
-};
-
-const emptyPsychiatrist = {
-  id: 'psy1', name: 'Dr. Aditya', fullName: 'Dr. Aditya Pratama, Sp.KJ', email: 'aditya@example.com', role: 'psychiatrist'
-};
-
-// Empty initial states for a completely new user
-const initialMoodLogs = [];
-const initialJournals = [];
-const initialPatientsList = [];
-
+// --- MOCK DATA FOR LIBRARY ---
 const mockDbtSkills = [
   { id: 's1', name: 'STOP', category: 'Distress Tolerance', time: '1 min', desc: 'Stop, Take a breath, Observe, Proceed mindfully.' },
   { id: 's2', name: 'Wise Mind', category: 'Mindfulness', time: '5 min', desc: 'Finding the balance between reasonable mind and emotion mind.' },
@@ -44,23 +29,14 @@ const mockDbtSkills = [
   { id: 's4', name: 'DEAR MAN', category: 'Interpersonal', time: '15 min', desc: 'A framework for asking for what you want or saying no effectively.' },
 ];
 
-const initialSafetyPlan = {
-  warningSigns: '',
-  copingStrategies: '',
-  supportPeople: '',
-  professionalContacts: '',
-  safePlaces: ''
-};
-
 const AppContext = createContext();
 
 // --- UI COMPONENTS ---
 const Logo = ({ type = 'full', className = 'h-8' }) => {
-  const src = type === 'icon' 
-    ? 'logo1.png' 
-    : 'logo1.png';
+  // FIXED: Menambahkan garis miring '/' agar Vite membaca dari folder public/
+  const src = '/logo1.png'; 
   return (
-    <img src={src} alt="Eazzie Logo" className={`object-contain ${className}`} />
+    <img src={src} alt="Eazzie" className={`object-contain ${className}`} />
   );
 };
 
@@ -161,12 +137,35 @@ const LandingPage = () => {
 };
 
 const AuthPage = ({ type = 'login' }) => {
-  const { login, navigate } = useContext(AppContext);
+  const { register, login, navigate } = useContext(AppContext);
   const [role, setRole] = useState('patient');
   
+  // Real Form State
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+
   const handleAuth = (e) => {
     e.preventDefault();
-    login(role === 'patient' ? emptyPatient : emptyPsychiatrist);
+    setErrorMsg('');
+
+    if (type === 'register') {
+      if (!name || !email || !password) {
+        setErrorMsg('Please fill in all fields.');
+        return;
+      }
+      register({ name, email, password, role });
+    } else {
+      if (!email || !password) {
+        setErrorMsg('Please enter your email and password.');
+        return;
+      }
+      const success = login(email, password, role);
+      if (!success) {
+        setErrorMsg('Account not found or password incorrect. Have you registered?');
+      }
+    }
   };
 
   return (
@@ -174,8 +173,6 @@ const AuthPage = ({ type = 'login' }) => {
       <div className="hidden lg:flex flex-1 bg-gradient-to-br from-[#F07C5F] to-[#FFB870] flex-col justify-between p-12 text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white to-transparent mix-blend-overlay"></div>
         <div className="relative z-10 cursor-pointer" onClick={() => navigate('landing')}>
-          {/* Using a brightened logo for the dark/colorful background if needed, but the original logo has dark text. 
-              We'll use a white filter or just standard icon here for clarity */}
           <div className="bg-white/90 p-3 rounded-2xl inline-block">
              <Logo type="full" className="h-8" />
           </div>
@@ -198,21 +195,52 @@ const AuthPage = ({ type = 'login' }) => {
             </p>
           </div>
 
-          <div className="flex bg-[#EAE6E1]/50 p-1 rounded-xl mb-8">
+          <div className="flex bg-[#EAE6E1]/50 p-1 rounded-xl mb-6">
             <button 
+              type="button"
               className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${role === 'patient' ? 'bg-white text-[#4A4A4A] shadow-sm' : 'text-[#777777] hover:text-[#4A4A4A]'}`}
-              onClick={() => setRole('patient')}
+              onClick={() => { setRole('patient'); setErrorMsg(''); }}
             >For Me (Patient)</button>
             <button 
+              type="button"
               className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${role === 'psychiatrist' ? 'bg-white text-[#4A4A4A] shadow-sm' : 'text-[#777777] hover:text-[#4A4A4A]'}`}
-              onClick={() => setRole('psychiatrist')}
+              onClick={() => { setRole('psychiatrist'); setErrorMsg(''); }}
             >For Psychiatrists</button>
           </div>
 
+          {errorMsg && (
+            <div className="mb-6 p-4 bg-[#E76F51]/10 border border-[#E76F51]/30 rounded-xl flex items-start gap-3">
+              <AlertCircle size={18} className="text-[#E76F51] mt-0.5" />
+              <p className="text-sm text-[#E76F51]">{errorMsg}</p>
+            </div>
+          )}
+
           <form onSubmit={handleAuth} className="space-y-5">
-            {type === 'register' && <Input label="Display Name" placeholder="How should we call you?" />}
-            <Input label="Email address" type="email" placeholder="hello@example.com" />
-            <Input label="Password" type="password" placeholder="••••••••" />
+            {type === 'register' && (
+              <Input 
+                label="Display Name" 
+                placeholder="How should we call you?" 
+                value={name} 
+                onChange={(e) => setName(e.target.value)} 
+                required 
+              />
+            )}
+            <Input 
+              label="Email address" 
+              type="email" 
+              placeholder="hello@example.com" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              required 
+            />
+            <Input 
+              label="Password" 
+              type="password" 
+              placeholder="••••••••" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              required 
+            />
             
             <Button type="submit" className="w-full py-3 text-lg mt-4">
               {type === 'login' ? 'Sign In' : 'Create Account'}
@@ -223,7 +251,7 @@ const AuthPage = ({ type = 'login' }) => {
             {type === 'login' ? "Don't have an account? " : "Already have an account? "}
             <span 
               className="text-[#F07C5F] font-medium cursor-pointer hover:underline"
-              onClick={() => navigate(type === 'login' ? 'register' : 'login')}
+              onClick={() => { navigate(type === 'login' ? 'register' : 'login'); setErrorMsg(''); }}
             >
               {type === 'login' ? 'Sign up' : 'Log in'}
             </span>
@@ -318,7 +346,7 @@ const PatientDashboard = () => {
         <Card className="md:col-span-2 bg-gradient-to-br from-[#F07C5F] to-[#D96B50] text-white border-none relative overflow-hidden flex flex-col justify-between min-h-[200px]">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
           <div className="relative z-10">
-            <h2 className="text-xl font-semibold mb-2">Ready for your first check-in?</h2>
+            <h2 className="text-xl font-semibold mb-2">Ready for a check-in?</h2>
             <p className="text-white/80 text-sm mb-6 max-w-sm">Taking a moment to notice your feelings is a gentle way to care for yourself today.</p>
           </div>
           <Button variant="secondary" className="w-fit" onClick={() => navigate('patient-mood')}>Start Check-in</Button>
@@ -373,9 +401,9 @@ const PatientMoodTracker = () => {
   const scaleOptions = [-3, -2, -1, 0, 1, 2, 3];
   
   const getScaleColor = (val) => {
-    if (val < 0) return 'text-[#E76F51] hover:bg-[#E76F51]/10 border-[#E76F51]/30'; // Alert Red for difficult
-    if (val === 0) return 'text-[#777777] hover:bg-[#EAE6E1]/50 border-[#EAE6E1]'; // Neutral
-    return 'text-[#F07C5F] hover:bg-[#F07C5F]/10 border-[#F07C5F]/30'; // Primary Coral for good
+    if (val < 0) return 'text-[#E76F51] hover:bg-[#E76F51]/10 border-[#E76F51]/30'; 
+    if (val === 0) return 'text-[#777777] hover:bg-[#EAE6E1]/50 border-[#EAE6E1]'; 
+    return 'text-[#F07C5F] hover:bg-[#F07C5F]/10 border-[#F07C5F]/30'; 
   };
 
   const toggleEmotion = (e) => {
@@ -546,7 +574,7 @@ const PatientMoodList = () => {
 const PatientSafetyPlan = () => {
   const { state, updateSafetyPlan } = useContext(AppContext);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState(state.safetyPlan);
+  const [formData, setFormData] = useState(state.safetyPlan || { warningSigns: '', copingStrategies: '', supportPeople: '', professionalContacts: '', safePlaces: '' });
 
   const handleSave = () => {
     updateSafetyPlan(formData);
@@ -600,7 +628,7 @@ const PatientSafetyPlan = () => {
                 ></textarea>
               ) : (
                 <div className="min-h-[60px]">
-                  {state.safetyPlan[sec.id] ? (
+                  {state.safetyPlan && state.safetyPlan[sec.id] ? (
                      <p className="text-sm text-[#4A4A4A] whitespace-pre-wrap leading-relaxed">{state.safetyPlan[sec.id]}</p>
                   ) : (
                      <p className="text-sm text-[#D0C9C0] italic">No entries yet. Edit your plan to add them.</p>
@@ -746,8 +774,8 @@ const PsychiatristLayout = ({ children }) => {
         </nav>
         <div className="p-4 bg-black/10">
           <div className="text-left mb-4 px-2">
-            <p className="text-sm font-medium truncate">{user.fullName}</p>
-            <p className="text-xs text-[#FFB870]">Verified Psychiatrist</p>
+            <p className="text-sm font-medium truncate">{user.name}</p>
+            <p className="text-xs text-[#FFB870] capitalize">{user.role}</p>
           </div>
           <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-white/60 hover:bg-white/5 hover:text-white rounded-xl transition-colors">
             <LogOut size={16} /> Log out
@@ -805,22 +833,35 @@ const PsychiatristDashboard = () => {
 
 // --- MAIN APP PROVIDER ---
 export default function App() {
+  // 1. STATE UNTUK DAFTAR USER YANG REGISTER
+  const [registeredUsers, setRegisteredUsers] = useState(() => {
+    const saved = localStorage.getItem('eazzie_registered_users');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // 2. STATE UNTUK USER YANG SEDANG LOGIN
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('eazzie_user');
     return savedUser ? JSON.parse(savedUser) : null;
   }); 
+
   const [currentRoute, setCurrentRoute] = useState(user ? (user.role === 'patient' ? 'patient-dash' : 'psych-dash') : 'landing');
   
-  // App State to simulate DB with localStorage persistence
+  // 3. STATE UNTUK DATA APLIKASI (Diikat ke user yang login secara konseptual, disederhanakan untuk UI)
   const [state, setState] = useState(() => {
     const savedState = localStorage.getItem('eazzie_data');
     return savedState ? JSON.parse(savedState) : {
-      moodLogs: initialMoodLogs,
-      journals: initialJournals,
-      safetyPlan: initialSafetyPlan
+      moodLogs: [],
+      safetyPlan: { warningSigns: '', copingStrategies: '', supportPeople: '', professionalContacts: '', safePlaces: '' }
     };
   });
 
+  // Efek untuk menyimpan perubahan data user yang teregister
+  useEffect(() => {
+    localStorage.setItem('eazzie_registered_users', JSON.stringify(registeredUsers));
+  }, [registeredUsers]);
+
+  // Efek untuk menyimpan session user aktif
   useEffect(() => {
     if (user) {
       localStorage.setItem('eazzie_user', JSON.stringify(user));
@@ -829,6 +870,7 @@ export default function App() {
     }
   }, [user]);
 
+  // Efek untuk menyimpan data state (mood, safety plan)
   useEffect(() => {
     localStorage.setItem('eazzie_data', JSON.stringify(state));
   }, [state]);
@@ -846,18 +888,39 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
-  const login = (userData) => {
-    setUser(userData);
-    navigate(userData.role === 'patient' ? 'patient-dash' : 'psych-dash');
+  // FUNGSI REGISTER: Simpan user baru ke database lokal, lalu auto-login
+  const register = (userData) => {
+    const newUser = { 
+      id: Date.now().toString(), 
+      name: userData.name, 
+      email: userData.email, 
+      password: userData.password, 
+      role: userData.role 
+    };
+    setRegisteredUsers(prev => [...prev, newUser]);
+    
+    // Auto-login setelah sukses register
+    setUser(newUser);
+    navigate(newUser.role === 'patient' ? 'patient-dash' : 'psych-dash');
+  };
+
+  // FUNGSI LOGIN: Cek apakah email, password, dan role cocok dengan data teregister
+  const login = (email, password, role) => {
+    const foundUser = registeredUsers.find(u => u.email === email && u.password === password && u.role === role);
+    if (foundUser) {
+      setUser(foundUser);
+      navigate(foundUser.role === 'patient' ? 'patient-dash' : 'psych-dash');
+      return true;
+    }
+    return false; // Mengembalikan false jika gagal
   };
 
   const logout = () => {
     setUser(null);
-    // Hapus baris yang mereset state dan localStorage di sini
     navigate('landing');
   };
 
-  const contextValue = { user, navigate, login, logout, currentRoute, state, addMoodLog, updateSafetyPlan };
+  const contextValue = { user, register, login, logout, navigate, currentRoute, state, addMoodLog, updateSafetyPlan };
 
   return (
     <AppContext.Provider value={contextValue}>
